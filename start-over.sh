@@ -72,13 +72,13 @@ for c in `git log --format=format:%h%n ${startingCommit}..${endingCommit} | tac`
   commitLineEcho "${c} (${n}) - checking out this commit's index";
   dateEcho "   `date`";
   echo -n "   git checkout - ";
-  git checkout ${c} .;
+  git checkout --overlay ${c} .;
   echo "   files cleaned up";
   cleanupNonDosFiles;
   echo "   git add -A";
   git add -A;
   git reset *${thisScript}*; # ensure this script and its backup/.swp files aren't added
   echo "   git commit";
-  git commit --allow-empty -C ${c} 1> /dev/null;
+  git commit --allow-empty --allow-empty-message -C ${c} 1> /dev/null;
   echo "   processing this commit is completed";
 done;
