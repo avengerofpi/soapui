@@ -66,8 +66,10 @@ git commit -m 'add a copy of this script being used to "start over"';
 # empty (no files), it is okay to skip the 1st commit.
 # i.e., git checkout gives git error with msg:
 #   error: pathspec '.' did not match any file(s) known to git
+n=$((0));
 for c in `git log --format=format:%h%n ${startingCommit}..${endingCommit} | tac`; do
-  commitLineEcho "${c} - checking out this commit's index";
+  n=$((n+1));
+  commitLineEcho "${c} (${n}) - checking out this commit's index";
   dateEcho "   `date`";
   echo -n "   git checkout - ";
   git checkout ${c} .;
