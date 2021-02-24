@@ -1,25 +1,43 @@
 #!/bin/bash
 
-thisScript="${0}";
+# Identify this script file
+thisScript="`basename ${0}`";
+if [ ! -r ${thisScript} ]; then exit; fi;
 
 # Function to `find` and cleanup non-DOS files.
 # Skip (all *.bat files), (the .git/ directory), and (this script file itself (start-over.sh))
 function cleanupNonDosFiles() {
- #find . -path ./.git -prune -o \( -not -iname '*.bat' -a -not -name '*start-over.sh*' \) -a -exec dos2unix {} &> /dev/null \;
   find . -path ./.git -prune -o \( -not -iname '*.bat' -a -not -name '*start-over.sh*' \)    -exec dos2unix {} &> /dev/null \;
 }
+
+# Functions to help with logging
+export BRIGHT_YELLOW="$(tput bold)$(tput setaf 11)"
+export FAINT_PURPLE="$(tput bold)$(tput setaf 93)"
+export TPUT_RESET="$(tput sgr0)"
+
+export COMMIT_LINE_COLOR="${BRIGHT_YELLOW}"
+export DATE_COLOR="${FAINT_PURPLE}"
+
+function commitLineEcho() { echo "${COMMIT_LINE_COLOR}${@}${TPUT_RESET}"; }
+function dateEcho()       { echo "${DATE_COLOR}${@}${TPUT_RESET}";        }
 
 # Figure out the branch name to use, if first choice is already taken
 startOverBranchName="";
 startOverBranchNameDefault="start-over";
-for suffix in "" _{01..99}; do
-  putative_startOverBranchName="${startOverBranchNameDefault}${suffix}";
+for suffix in {00..99}; do
+  putative_startOverBranchName="${startOverBranchNameDefault}_${suffix}";
   check_putative_startOverBranchName="`git branch | egrep \"^..${putative_startOverBranchName}\$\"`";
   if [ -z "${check_putative_startOverBranchName}" ]; then
     startOverBranchName="${putative_startOverBranchName}";
     break;
   fi;
-done;
+done
+
+# Exit script if there is an error
+set -e;
+# Print shell input lines as they are read.
+#set -v;
+
 # Report the branch name that will be used
 if [ -n "${startOverBranchName}" ]; then
   echo "Using 'start over' branch name '${startOverBranchName}'";
@@ -27,18 +45,19 @@ else
   echo "Error: failed to choose a 'start over' branch name to use";
   exit;
 fi;
+
 # Checkout a new branch from the first commit
 firstCommit="`git log --format=format:%h | tail -1`";
-git checkout -b ${startOverBranchName} ${firstCommit};
-git add "${thisScript}"
+git checkout -b ${startOverBranchName} ${firstCommit} || exit 1;
+thisScriptCopy="${thisScript}_${suffix}";
+cp "${thisScript}" "${thisScriptCopy}";
+git add "${thisScriptCopy}";
+git commit -m 'add a copy of this script being used to "start over"';
 
 # Identify the commit we want to perform cleanup until
 targetCommit="next";
 #targetCommit="8a1b8e6b9";
 #targetCommit="a585f5274";
-
-#set -v;
-#set -x;
 
 # Iterate the commits from firstCommit (already checked out) till targetCommit,
 # perform cleanup on each.
@@ -46,15 +65,16 @@ targetCommit="next";
 # Note that the first commit might not have any files, and thus might give git error msg
 #   error: pathspec '.' did not match any file(s) known to git
 for c in `git log --format=format:%h%n ${targetCommit} | tac`; do
-  echo "commit ${c} - checking out working tree";
-  echo "   `date`";
+  commitLineEcho "${c} - checking out this commit's index";
+  dateEcho "   `date`";
+  echo -n "   git checkout - ";
   git checkout ${c} .;
-  echo "   checked out";
+  echo "   files cleaned up";
   cleanupNonDosFiles;
-  echo "   cleaned up";
+  echo "   git add -A";
   git add -A;
-  echo "   updates added";
+  git reset *${thisScript}*; # ensure this script and its backup/.swp files aren't added
+  echo "   git commit";
   git commit --allow-empty -C ${c} 1> /dev/null;
-  echo "   updates committed";
-  echo "   cleanup of working tree completed";
+  echo "   processing this commit is completed";
 done;
