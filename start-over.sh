@@ -13,13 +13,24 @@ function cleanupNonDosFiles() {
 # Verify that the differences between two commits ${commitA} and ${commitB} is only modified files
 function verifyDiffIsOnlyMods() {
   [ -z "${commitA}" -o -z "${commitB}" ] && echo 'Missing environment var ${commitA} and/or ${commitB}';
-  d=`git diff "${commitA}" "${commitB}" | egrep '^[^M]'`;k
-  [ -z "${d}" ] || \
-    ( \
-      echo ${d} | head && \
-      echo "..." && \
-      echo "Current 'git diff "${commitA}" "${commitB}"' includes non-modification. Exiting." && exit 1
-    );
+ echo ${thisScriptCopy};
+  #diffVerifyCmd="git diff --name-status \"${commitA}\" \"${commitB}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"";
+  set +e; # turn off 'exit on error' since grep returns exit code '1' on no lines being found
+  diffVerifyCmd="git diff --name-status '${commitA}' '${commitB}' | egrep -v '^M' | egrep -v '^A\s${thisScriptCopy}'";
+  #d=`git diff --name-status "${commitA}" "${commitB}" | egrep -v '^M' | egrep -v "^A\s${thisScriptCopy}"`;
+  #d="`git diff --name-status \"${commitA}\" \"${commitB}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"`";
+  #d=`git diff --name-status "${commitA}" "${commitB}" | egrep -v '^M'`;
+ echo "\${diffVerifyCmd}: '${diffVerifyCmd}'";
+  d="`eval ${diffVerifyCmd}`";
+  set -e; # turn back on 'exit on error'
+ echo "\${d} = '${d}'";
+  [ -z "${d}" ] || ( \
+    echo ${d} | head && \
+    echo "..." && \
+    echo "Current 'git diff "${commitA}" "${commitB}"' includes non-modification. Exiting." \
+    && exit 1 \
+  );
+ echo "done check...";
 }
 
 # Functions to help with logging
