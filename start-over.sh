@@ -10,6 +10,18 @@ function cleanupNonDosFiles() {
   find . -path ./.git -prune -o \( -not -iname '*.bat' -a -not -name '*start-over.sh*' \)    -exec dos2unix {} &> /dev/null \;
 }
 
+# Verify that the differences between two commits ${commitA} and ${commitB} is only modified files
+function verifyDiffIsOnlyMods() {
+  [ -z "${commitA}" -o -z "${commitB}" ] && echo 'Missing environment var ${commitA} and/or ${commitB}';
+  d=`git diff "${commitA}" "${commitB}" | egrep '^[^M]'`;k
+  [ -z "${d}" ] || \
+    ( \
+      echo ${d} | head && \
+      echo "..." && \
+      echo "Current 'git diff "${commitA}" "${commitB}"' includes non-modification. Exiting." && exit 1
+    );
+}
+
 # Functions to help with logging
 export BRIGHT_YELLOW="$(tput bold)$(tput setaf 11)"
 export FAINT_PURPLE="$(tput bold)$(tput setaf 93)"
@@ -80,5 +92,9 @@ for c in `git log --format=format:%h%n ${startingCommit}..${endingCommit} | tac`
   git reset *${thisScript}*; # ensure this script and its backup/.swp files aren't added
   echo "   git commit";
   git commit --allow-empty --allow-empty-message -C ${c} 1> /dev/null;
+  echo "   attempting to verify changes...";
+  commitA="${c}";
+  commitB="`git log -1 --format=format:%h`";
+  verifyDiffIsOnlyMods
   echo "   processing this commit is completed";
 done;
