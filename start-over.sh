@@ -15,13 +15,13 @@ function verifyDiffIsOnlyMods() {
   [ -z "${c}" -o -z "${latestStartOverCommit}" ] && echo 'Missing environment var ${c} and/or ${latestStartOverCommit}' && exit 1;
  echo ${thisScriptCopy};
   set +e; # turn off 'exit on error' since grep returns exit code '1' on no lines being found
-  diffVerifyCmd="git diff --name-status '${c}' '${latestStartOverCommit}' | egrep -v '^M' | egrep -v '^A\s${thisScriptCopy}'";
- echo "\${diffVerifyCmd}: '${diffVerifyCmd}'";
-  d="`eval ${diffVerifyCmd}`";
+  diffCmd="git diff --name-status '${c}' '${latestStartOverCommit}' | egrep -v '^M' | egrep -v '^A\s${thisScriptCopy}'";
+ echo "\${diffCmd}: '${diffCmd}'";
+  diffOutput="`eval ${diffCmd}`";
   set -e; # turn back on 'exit on error'
- echo "\${d} = '${d}'";
-  [ -z "${d}" ] || ( \
-    echo ${d} | head && \
+ echo "\${diffOutput} = '${diffOutput}'";
+  [ -z "${diffOutput}" ] || ( \
+    echo ${diffOutput} | head && \
     echo "..." && \
     echo "Current 'git diff "${c}" "${latestStartOverCommit}"' includes non-modification. Exiting." \
     && exit 1 \
