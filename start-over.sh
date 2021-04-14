@@ -14,12 +14,8 @@ function cleanupNonDosFiles() {
 function verifyDiffIsOnlyMods() {
   [ -z "${c}" -o -z "${latestStartOverCommit}" ] && echo 'Missing environment var ${c} and/or ${latestStartOverCommit}' && exit 1;
  echo ${thisScriptCopy};
-  #diffVerifyCmd="git diff --name-status \"${c}\" \"${latestStartOverCommit}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"";
   set +e; # turn off 'exit on error' since grep returns exit code '1' on no lines being found
   diffVerifyCmd="git diff --name-status '${c}' '${latestStartOverCommit}' | egrep -v '^M' | egrep -v '^A\s${thisScriptCopy}'";
-  #d=`git diff --name-status "${c}" "${latestStartOverCommit}" | egrep -v '^M' | egrep -v "^A\s${thisScriptCopy}"`;
-  #d="`git diff --name-status \"${c}\" \"${latestStartOverCommit}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"`";
-  #d=`git diff --name-status "${c}" "${latestStartOverCommit}" | egrep -v '^M'`;
  echo "\${diffVerifyCmd}: '${diffVerifyCmd}'";
   d="`eval ${diffVerifyCmd}`";
   set -e; # turn back on 'exit on error'
