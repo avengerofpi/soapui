@@ -19,14 +19,26 @@ function verifyDiffIsOnlyMods() {
  echo "\${diffCmd}: '${diffCmd}'";
   diffOutput="`eval ${diffCmd}`";
   set -e; # turn back on 'exit on error'
- echo "\${diffOutput} = '${diffOutput}'";
-  [ -z "${diffOutput}" ] || ( \
-    echo ${diffOutput} | head && \
-    echo "..." && \
-    echo "Current 'git diff "${c}" "${latestStartOverCommit}"' includes non-modification. Exiting." \
-    && exit 1 \
-  );
- echo "done check...";
+  if [ -n "${diffOutput}" ]; then
+    diffOutput_indented="`echo ${diffOutput} | sed -e 's@^@  @'`";
+    errorEcho "The diff between the source commit and the cleaned-up commit";
+    errorEcho "  ${diffCmd}";
+    errorEcho "includes added or removed files, including:";
+    # echo initial and trailing lines of the diffOutput
+    # Note: to make sure leading whitespace is not lost, ensure that
+    #   ${diffOutput_indented} and the excerpt vars are wrapped in
+    #    double-quotes when being echo'd
+    headExcerpt="`echo \"${diffOutput_indented}\" | head -2`";
+    errorEcho "${headExcerpt}";
+    tailExcerpt="`echo ${diffOutput_indented} | tail +2 | tail -2`";
+    if [ -n "${tailExcerpt}" ]; then
+      errorEcho "...";
+      errorEcho "${tailExcerpt}";
+    fi;
+    errorEcho "This is unexpected. Exiting.";
+    exit 1;
+  fi;
+}
 
 # Set/Update the value of 'latestStartOverCommit' to the latest commit.
 # This should be the latest commit on our 'start over' branch.
