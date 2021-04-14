@@ -71,8 +71,13 @@ fi;
 
 # Identify the commit we want to perform cleanup until
 endingCommit="next";
-#endingCommit="8a1b8e6b9";
-#endingCommit="a585f5274";
+#endingCommit="8a1b8e6b9"; # n=0
+#endingCommit="3eca4d2de"; # n=3
+#endingCommit="a585f5274"; # n=9
+
+# For testing; ensure this commit that only adds files
+#endingCommit="10a9d2e11"; # n=1839
+#startingCommit="0b107dbb1"; # n=1836
 
 # Identify the commit to start mimicking.
 startingCommit="`git log --format=format:%h ${endingCommit} | tail -1`";
