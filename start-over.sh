@@ -12,7 +12,7 @@ function cleanupNonDosFiles() {
 
 # Verify that the differences between two commits ${c} and ${latestStartOverCommit} is only modified files
 function verifyDiffIsOnlyMods() {
-  [ -z "${c}" -o -z "${latestStartOverCommit}" ] && echo 'Missing environment var ${c} and/or ${latestStartOverCommit}';
+  [ -z "${c}" -o -z "${latestStartOverCommit}" ] && echo 'Missing environment var ${c} and/or ${latestStartOverCommit}' && exit 1;
  echo ${thisScriptCopy};
   #diffVerifyCmd="git diff --name-status \"${c}\" \"${latestStartOverCommit}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"";
   set +e; # turn off 'exit on error' since grep returns exit code '1' on no lines being found
