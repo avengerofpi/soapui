@@ -38,15 +38,18 @@ function updateLatestStartOverCommit() {
 }
 
 # Functions to help with logging
+export BRIGHT_RED="$(tput bold)$(tput setaf 1)";
 export BRIGHT_YELLOW="$(tput bold)$(tput setaf 11)";
 export FAINT_PURPLE="$(tput bold)$(tput setaf 93)";
 export TPUT_RESET="$(tput sgr0)";
 
 export COMMIT_LINE_COLOR="${BRIGHT_YELLOW}";
 export DATE_COLOR="${FAINT_PURPLE}";
+export ERROR_COLOR="${BRIGHT_RED}";
 
 function commitLineEcho() { echo "${COMMIT_LINE_COLOR}${@}${TPUT_RESET}"; }
 function dateEcho()       { echo "${DATE_COLOR}${@}${TPUT_RESET}";        }
+function errorEcho()      { echo "${ERROR_COLOR}${@}${TPUT_RESET}";       }
 
 # Figure out the branch name to use, if first choice is already taken
 startOverBranchName="";
