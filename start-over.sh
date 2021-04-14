@@ -31,6 +31,14 @@ function verifyDiffIsOnlyMods() {
     && exit 1 \
   );
  echo "done check...";
+
+# Set/Update the value of 'latestStartOverCommit' to the latest commit.
+# This should be the latest commit on our 'start over' branch.
+# Be careful to only do this/use this value when we are on that chain, avoid
+# using it when we are in the middle of some fancy `git reset` sequence or
+# other fanciness to help us pull in all changes from the source commit.
+function updateLatestStartOverCommit() {
+  latestStartOverCommit="`git log -1 --format=format:%h`";
 }
 
 # Functions to help with logging
@@ -86,6 +94,7 @@ thisScriptCopy="${thisScript}_${suffix}";
 cp "${thisScript}" "${thisScriptCopy}";
 git add "${thisScriptCopy}";
 git commit -m 'add a copy of this script being used to "start over"';
+updateLatestStartOverCommit;
 
 # Iterate the commits from startingCommit (already checked out) till
 # endingCommit, perform cleanup on each. Create a new commit of the cleaned-up
@@ -109,7 +118,7 @@ for c in `git log --format=format:%h%n ${startingCommit}..${endingCommit} | tac`
   echo "   git commit";
   git commit --allow-empty --allow-empty-message -C ${c} 1> /dev/null;
   echo "   attempting to verify changes...";
-  latestStartOverCommit="`git log -1 --format=format:%h`";
+  updateLatestStartOverCommit;
   verifyDiffIsOnlyMods
   echo "   processing this commit is completed";
 done;
