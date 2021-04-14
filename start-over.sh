@@ -10,16 +10,16 @@ function cleanupNonDosFiles() {
   find . -path ./.git -prune -o \( -not -iname '*.bat' -a -not -name '*start-over.sh*' \)    -exec dos2unix {} &> /dev/null \;
 }
 
-# Verify that the differences between two commits ${commitA} and ${commitB} is only modified files
+# Verify that the differences between two commits ${c} and ${latestStartOverCommit} is only modified files
 function verifyDiffIsOnlyMods() {
-  [ -z "${commitA}" -o -z "${commitB}" ] && echo 'Missing environment var ${commitA} and/or ${commitB}';
+  [ -z "${c}" -o -z "${latestStartOverCommit}" ] && echo 'Missing environment var ${c} and/or ${latestStartOverCommit}';
  echo ${thisScriptCopy};
-  #diffVerifyCmd="git diff --name-status \"${commitA}\" \"${commitB}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"";
+  #diffVerifyCmd="git diff --name-status \"${c}\" \"${latestStartOverCommit}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"";
   set +e; # turn off 'exit on error' since grep returns exit code '1' on no lines being found
-  diffVerifyCmd="git diff --name-status '${commitA}' '${commitB}' | egrep -v '^M' | egrep -v '^A\s${thisScriptCopy}'";
-  #d=`git diff --name-status "${commitA}" "${commitB}" | egrep -v '^M' | egrep -v "^A\s${thisScriptCopy}"`;
-  #d="`git diff --name-status \"${commitA}\" \"${commitB}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"`";
-  #d=`git diff --name-status "${commitA}" "${commitB}" | egrep -v '^M'`;
+  diffVerifyCmd="git diff --name-status '${c}' '${latestStartOverCommit}' | egrep -v '^M' | egrep -v '^A\s${thisScriptCopy}'";
+  #d=`git diff --name-status "${c}" "${latestStartOverCommit}" | egrep -v '^M' | egrep -v "^A\s${thisScriptCopy}"`;
+  #d="`git diff --name-status \"${c}\" \"${latestStartOverCommit}\" | egrep -v '^M' | egrep -v \"^A\s${thisScriptCopy}\"`";
+  #d=`git diff --name-status "${c}" "${latestStartOverCommit}" | egrep -v '^M'`;
  echo "\${diffVerifyCmd}: '${diffVerifyCmd}'";
   d="`eval ${diffVerifyCmd}`";
   set -e; # turn back on 'exit on error'
@@ -27,7 +27,7 @@ function verifyDiffIsOnlyMods() {
   [ -z "${d}" ] || ( \
     echo ${d} | head && \
     echo "..." && \
-    echo "Current 'git diff "${commitA}" "${commitB}"' includes non-modification. Exiting." \
+    echo "Current 'git diff "${c}" "${latestStartOverCommit}"' includes non-modification. Exiting." \
     && exit 1 \
   );
  echo "done check...";
@@ -109,8 +109,7 @@ for c in `git log --format=format:%h%n ${startingCommit}..${endingCommit} | tac`
   echo "   git commit";
   git commit --allow-empty --allow-empty-message -C ${c} 1> /dev/null;
   echo "   attempting to verify changes...";
-  commitA="${c}";
-  commitB="`git log -1 --format=format:%h`";
+  latestStartOverCommit="`git log -1 --format=format:%h`";
   verifyDiffIsOnlyMods
   echo "   processing this commit is completed";
 done;
