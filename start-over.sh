@@ -34,12 +34,12 @@ function verifyDiffIsOnlyMods() {
 }
 
 # Functions to help with logging
-export BRIGHT_YELLOW="$(tput bold)$(tput setaf 11)"
-export FAINT_PURPLE="$(tput bold)$(tput setaf 93)"
-export TPUT_RESET="$(tput sgr0)"
+export BRIGHT_YELLOW="$(tput bold)$(tput setaf 11)";
+export FAINT_PURPLE="$(tput bold)$(tput setaf 93)";
+export TPUT_RESET="$(tput sgr0)";
 
-export COMMIT_LINE_COLOR="${BRIGHT_YELLOW}"
-export DATE_COLOR="${FAINT_PURPLE}"
+export COMMIT_LINE_COLOR="${BRIGHT_YELLOW}";
+export DATE_COLOR="${FAINT_PURPLE}";
 
 function commitLineEcho() { echo "${COMMIT_LINE_COLOR}${@}${TPUT_RESET}"; }
 function dateEcho()       { echo "${DATE_COLOR}${@}${TPUT_RESET}";        }
@@ -54,7 +54,7 @@ for suffix in {00..99}; do
     startOverBranchName="${putative_startOverBranchName}";
     break;
   fi;
-done
+done;
 
 # Exit script if there is an error
 set -e;
