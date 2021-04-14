@@ -119,8 +119,10 @@ for c in `git log --format=format:%h%n ${startingCommit}..${endingCommit} | tac`
   n=$((n+1));
   commitLineEcho "${c} (${n}) - checking out this commit's index";
   dateEcho "   `date`";
-  echo -n "   git checkout - ";
-  git checkout --overlay ${c} .;
+  # Reset '--hard' to the current source commit, then pull in all it's changed
+  # with a '--mixed' reset on top of the most recent 'start over' commit
+  git reset --hard ${c};
+  git reset --mixed "${latestStartOverCommit}" 1> /dev/null;
   echo "   files cleaned up";
   cleanupNonDosFiles;
   echo "   git add -A";
